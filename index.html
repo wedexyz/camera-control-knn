@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="shortcut icon" href="matahari.gif" type="image/x-icon">
+</head>
+<link href="site.css" rel="stylesheet">
+<body onload="suhuBadan()">
+    JARAK<h1 id="bigText"></h1>
+    <div id="mySidenav" class="sidenav">
+      <a id="hover1">
+      <button id="class-a" >prediksi pertama</button><input type="text" id="field1" ></a>
+      <a id="hover2">
+      <button id="class-b">prediksi kedua</button><input type="text" id="field2" ></a>
+      <a id="hover3">
+      <button id="class-c">prediksi ketiga</button><input type="text" id="field3" ></a>
+      <a id="hover4">
+      <button id="class-d">prediksi keempat</button><input type="text" id="field4" ></a>
+      <a id="hover5">
+      <button id="class-e">prediksi kelima</button><input type="text" id="field5" ></a>
+      <a id="hover6">
+        <button id="class-f">prediksi kelima</button><input type="text" id="field6" ></a>
+      </div>
+    <div class="wrapper">
+            <video id="localVideo" autoplay style="display: none;"></video>
+            <video id="remoteVideo" autoplay style="	width: 640px;
+            height: 480px;"> </video>
+     <div id="console" class="motion-box" style="color: rgb(7, 133, 18);">
+      </div>
+          
+    </div>
+
+<form  oninput="x.value= parseInt(a.value)+parseInt(b.value)" style="display: none;">
+    <input type="range" id="a"  >
+    <input type="number" id="b" value="1">
+    <output id="myOutput" name="x" for="a b"></output>
+</form>
+
+<p id="hasil"></p>
+
+
+
+
+</body>
+<script src="/firebase.js"></script>
+<audio src="audio/activated.wav" id="audio-activated" preload="auto" autostart="false"></audio>
+<audio src="audio/i-see-you.wav" id="audio-i-see-you" preload="auto" autostart="false"></audio>
+<audio src="audio/fire.wav" id="audio-fire" preload="auto" autostart="false"></audio>
+<audio src="audio/target-lost.wav" id="audio-target-lost" preload="auto" autostart="false"></audio>
+<audio src="audio/ow.wav" id="audio-ow" preload="auto" autostart="false"></audio>
+<script src="ts.min.js"></script>
+<script src="mobi.min.js"></script>
+<script src="knn.min.js"></script>
+<script src="jquery.min.js"></script>
+<script src="scale.min.js"></script>
+<script src="diff-cam-engine.js"></script>
+<script src="site.js"></script>
+<script>
+var firebaseConfig = {
+     databaseURL: "https://megaboth007.firebaseio.com/",
+   };
+   var x;
+   // Initialize Firebase
+   firebase.initializeApp(firebaseConfig);
+   var dbRef = firebase.database();
+var contactsRef = dbRef.ref('LED_STATUS');
+const bigText = document.getElementById('bigText');
+dbRef.ref().child('Distance').on('value', snap => bigText.innerText = snap.val());
+
+function suhuBadan() {
+
+    var suhu, voteable;
+    suhu = document.getElementById("myOutput").value;
+    ukuran = ( suhu<20 )? 
+    '<img src="dingin.gif" style="widht:50px;height:50px;" >':
+    '<img src="matahari.gif" style="widht:50px;height:50px;" >';   
+    document.getElementById("hasil").innerHTML = ukuran
+    const webcamElement = document.getElementById('localVideo');
+    let net;
+
+    app();
+
+/*
+async function app() {
+  // Load the model.
+ // net = await mobilenet.load();
+ 
+  
+  // Create an object from Tensorflow.js data API which could capture image 
+  // from the web camera as Tensor.
+  const webcam = await tf.data.webcam(webcamElement);
+  while (true) {
+    const img = await webcam.capture();
+    const result = await net.classify(img);
+
+    document.getElementById('console').innerText = `
+      prediction: ${result[0].className}
+      probability: ${result[0].probability}
+    `;
+    // Dispose the tensor to release the memory.
+    img.dispose();
+
+    // Give some breathing room by waiting for the next animation frame to
+    // fire.
+    await tf.nextFrame();
+  }
+}
+*/
+const classifier = knnClassifier.create();
+
+async function app() {
+  console.log('Loading mobilenet..');
+
+  // Load the model.
+  net = await mobilenet.load();
+  console.log('Successfully loaded model');
+
+  // Create an object from Tensorflow.js data API which could capture image 
+  // from the web camera as Tensor.
+  const webcam = await tf.data.webcam(webcamElement);
+
+  // Reads an image from the webcam and associates it with a specific class
+  // index.
+  const addExample = async classId => {
+    // Capture an image from the web camera.
+    const img = await webcam.capture();
+
+    // Get the intermediate activation of MobileNet 'conv_preds' and pass that
+    // to the KNN classifier.
+    const activation = net.infer(img, 'conv_preds');
+
+    // Pass the intermediate activation to the classifier.
+    classifier.addExample(activation, classId);
+    img.dispose();
+  };
+
+ 
+  document.getElementById('class-a').addEventListener('click', () => addExample(0));
+  document.getElementById('class-b').addEventListener('click', () => addExample(1));
+  document.getElementById('class-c').addEventListener('click', () => addExample(2));
+  document.getElementById('class-d').addEventListener('click', () => addExample(3));
+  document.getElementById('class-e').addEventListener('click', () => addExample(4));
+  document.getElementById('class-f').addEventListener('click', () => addExample(5));
+  while (true) {
+    if (classifier.getNumClasses() > 0) {
+      const img = await webcam.capture();
+      const activation = net.infer(img, 'conv_preds');
+      const result = await classifier.predictClass(activation);
+      const classes =
+       [
+      document.getElementById("field1").value, 
+      document.getElementById("field2").value, 
+      document.getElementById("field3").value,
+      document.getElementById("field4").value,
+      document.getElementById("field5").value,
+       document.getElementById("field6").value
+      ];
+      document.getElementById('console').innerText = `
+        prediksi: ${classes[result.label]}\n
+       presentase: ${result.confidences[result.label]*100}%
+      `;
+
+      document.getElementById('myOutput').value=`${classes[result.label]}`
+      contactsRef.set(document.getElementById("myOutput").value);
+      // Dispose the tensor to release the memory.
+      img.dispose();
+      
+    }
+
+    await tf.nextFrame();
+  }
+}
+
+
+}
+
+</script>
+
+</html>
