@@ -59,16 +59,22 @@
 <script src="diff-cam-engine.js"></script>
 <script src="site.js"></script>
 <script>
-var firebaseConfig = {
-     databaseURL: "https://megaboth007.firebaseio.com/",
-   };
-   var x;
-   // Initialize Firebase
-   firebase.initializeApp(config);
-   var dbRef = firebase.database();
+ var config = {
+  apiKey: "AIzaSyBYVwVZUBLXSm7iR5Fp6k-dziJGEuhwExk",
+  authDomain: "megaboth007.firebaseapp.com",
+  databaseURL: "https://megaboth007.firebaseio.com",
+  projectId: "megaboth007",
+  storageBucket: "megaboth007.appspot.com",
+  messagingSenderId: "942424390212",
+  appId: "1:942424390212:web:c3622743b0fba57b5a1a11"
+
+  };
+firebase.initializeApp(config);
+var x;
+var dbRef = firebase.database();
 var contactsRef = dbRef.ref('LED_STATUS');
 const bigText = document.getElementById('bigText');
-dbRef.ref().child('Distance').on('value', snap => bigText.innerText = snap.val());
+//dbRef.ref().child('Distance').on('value', snap => bigText.innerText = snap.val());
 
 function suhuBadan() {
 
@@ -83,34 +89,8 @@ function suhuBadan() {
 
     app();
 
-/*
-async function app() {
-  // Load the model.
- // net = await mobilenet.load();
- 
-  
-  // Create an object from Tensorflow.js data API which could capture image 
-  // from the web camera as Tensor.
-  const webcam = await tf.data.webcam(webcamElement);
-  while (true) {
-    const img = await webcam.capture();
-    const result = await net.classify(img);
 
-    document.getElementById('console').innerText = `
-      prediction: ${result[0].className}
-      probability: ${result[0].probability}
-    `;
-    // Dispose the tensor to release the memory.
-    img.dispose();
-
-    // Give some breathing room by waiting for the next animation frame to
-    // fire.
-    await tf.nextFrame();
-  }
-}
-*/
 const classifier = knnClassifier.create();
-
 async function app() {
   console.log('Loading mobilenet..');
 
@@ -144,6 +124,7 @@ async function app() {
   document.getElementById('class-d').addEventListener('click', () => addExample(3));
   document.getElementById('class-e').addEventListener('click', () => addExample(4));
   document.getElementById('class-f').addEventListener('click', () => addExample(5));
+    
   while (true) {
     if (classifier.getNumClasses() > 0) {
       const img = await webcam.capture();
@@ -156,7 +137,7 @@ async function app() {
       document.getElementById("field3").value,
       document.getElementById("field4").value,
       document.getElementById("field5").value,
-       document.getElementById("field6").value
+      document.getElementById("field6").value
       ];
       document.getElementById('console').innerText = `
         prediksi: ${classes[result.label]}\n
